@@ -251,7 +251,42 @@ async def transcribe(file: UploadFile = File(...)):
 static_dir = Path("static")
 static_dir.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static_dir")
-app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="static")
+
+@app.get("/index.html")
+async def get_index():
+    return FileResponse(static_dir / "index.html")
+
+# ZeroGPU hook and Gradio wrapper for Hugging Face Spaces free-tier compatibility
+try:
+    import spaces
+    HAS_SPACES = True
+except ImportError:
+    HAS_SPACES = False
+
+def _zero_gpu_startup_hook(dummy: str) -> str:
+    return dummy
+
+if HAS_SPACES:
+    _zero_gpu_startup_hook = spaces.GPU(duration=1)(_zero_gpu_startup_hook)
+
+import gradio as gr
+
+with gr.Blocks(title="Gilgamesh - King of Heroes") as demo:
+    _inp = gr.Textbox(visible=False)
+    _out = gr.Textbox(visible=False)
+    _btn = gr.Button("init", visible=False)
+    _btn.click(fn=_zero_gpu_startup_hook, inputs=_inp, outputs=_out)
+    gr.HTML("""
+    <style>
+    body, html { margin: 0 !important; padding: 0 !important; height: 100vh !important; width: 100vw !important; overflow: hidden !important; }
+    .gradio-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; border: none !important; }
+    footer { display: none !important; }
+    #custom-app-frame { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; border: none; z-index: 999999; }
+    </style>
+    <iframe id="custom-app-frame" src="/static/index.html"></iframe>
+    """)
+
+app = gr.mount_gradio_app(app, demo, path="/")
 
 if __name__ == "__main__":
     import uvicorn
