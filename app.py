@@ -250,13 +250,8 @@ async def transcribe(file: UploadFile = File(...)):
 # Static files for the frontend
 static_dir = Path("static")
 static_dir.mkdir(exist_ok=True)
-app.mount("/static", StaticFiles(directory=str(static_dir)), name="static_dir")
 
-@app.get("/index.html")
-async def get_index():
-    return FileResponse(static_dir / "index.html")
-
-# ZeroGPU hook and Gradio wrapper for Hugging Face Spaces free-tier compatibility
+# ZeroGPU hook and Gradio wrapper for Hugging Face Spaces compatibility
 try:
     import spaces
     HAS_SPACES = True
@@ -286,9 +281,14 @@ with gr.Blocks(title="Gilgamesh - King of Heroes") as demo:
     <iframe id="custom-app-frame" src="/static/index.html"></iframe>
     """)
 
-app = gr.mount_gradio_app(app, demo, path="/")
+# Attach all FastAPI routes and static files directly to Gradio's internal FastAPI app
+demo.app.include_router(app.router)
+demo.app.mount("/static", StaticFiles(directory=str(static_dir)), name="static_dir")
+
+@demo.app.get("/index.html")
+async def get_index():
+    return FileResponse(static_dir / "index.html")
 
 if __name__ == "__main__":
-    import uvicorn
     port = int(os.environ.get("PORT", 7860))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    demo.launch(server_name="0.0.0.0", server_port=port)
