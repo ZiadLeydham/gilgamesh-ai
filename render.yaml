@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: gilgamesh-ai
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: VOICE_ENGINE
+        value: fish_audio
+      - key: FISH_MODEL_ID
+        value: c8f17f6f069a44c2a0b617a3f3d9298f
+      - key: NOISE_FILTER
+        value: "false"
+      - key: GROQ_API_KEY
+        sync: false
+      - key: FISH_API_KEY
+        sync: false

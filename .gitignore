@@ -1,0 +1,27 @@
+# Environment & secrets
+.env
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local GPU Engine & Heavy Weights (DO NOT UPLOAD - Several GBs)
+Applio/
+models/
+rvc/
+ffmpeg.exe
+ffprobe.exe
+
+# Audio cache & temporary test clips
+audio_cache/
+*.mp3
+*.wav
+
+# User memory & history (created dynamically per instance)
+memories.json
+chat_history.json
+
+# OS artifacts
+.DS_Store
+Thumbs.db
