@@ -36,6 +36,15 @@ from memory_engine import (
 ENV_PATH = Path(".env")
 load_dotenv(dotenv_path=ENV_PATH)
 
+# ZeroGPU compatibility for Hugging Face Spaces
+try:
+    import spaces
+    @spaces.GPU
+    def _zero_gpu_init():
+        return True
+except Exception:
+    pass
+
 app = FastAPI(title="Gilgamesh - The King of Heroes")
 
 # Audio cache folder
