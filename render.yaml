@@ -3,9 +3,12 @@ services:
     name: gilgamesh-ai
     runtime: python
     plan: free
+    region: oregon
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
       - key: VOICE_ENGINE
         value: fish_audio
       - key: FISH_MODEL_ID

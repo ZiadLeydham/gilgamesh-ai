@@ -258,9 +258,8 @@ async def get_app_static(file_path: str):
         return FileResponse(p)
     return FileResponse(static_dir / "index.html")
 
-@app.get("/index.html")
-async def get_index():
-    return FileResponse(static_dir / "index.html")
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static_dir")
+app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="static_root")
 
 # ZeroGPU hook and Gradio wrapper for Hugging Face Spaces compatibility
 try:
