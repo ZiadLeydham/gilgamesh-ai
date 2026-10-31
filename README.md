@@ -1,12 +1,14 @@
 ---
-title: Gilgamesh AI Companion
+title: Gil
 emoji: 👑
 colorFrom: yellow
 colorTo: red
-sdk: docker
-app_port: 7860
+sdk: gradio
+sdk_version: 5.16.0
+python_version: '3.12'
+app_file: app.py
 pinned: false
 ---
 
 # Gilgamesh AI Companion
-Canon-authentic King of Heroes with Fish Audio speech and persistent memory.
+The King of Heroes & Wise King of Uruk with Fish Audio TTS and persistent memory.

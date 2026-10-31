@@ -12,11 +12,13 @@ models/
 rvc/
 ffmpeg.exe
 ffprobe.exe
+cloudflared.exe
 
 # Audio cache & temporary test clips
 audio_cache/
 *.mp3
 *.wav
+start_online.bat
 
 # User memory & history (created dynamically per instance)
 memories.json
