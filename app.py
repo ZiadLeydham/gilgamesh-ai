@@ -281,14 +281,20 @@ with gr.Blocks(title="Gilgamesh - King of Heroes") as demo:
     <iframe id="custom-app-frame" src="/static/index.html"></iframe>
     """)
 
-# Attach all FastAPI routes and static files directly to Gradio's internal FastAPI app
-demo.app.include_router(app.router)
-demo.app.mount("/static", StaticFiles(directory=str(static_dir)), name="static_dir")
+# Create Gradio's internal FastAPI app and attach all our API endpoints and static assets
+server_app = gr.routes.App.create_app(demo)
+server_app.include_router(app.router)
+server_app.mount("/static", StaticFiles(directory=str(static_dir)), name="static_dir")
 
-@demo.app.get("/index.html")
+@server_app.get("/index.html")
 async def get_index():
     return FileResponse(static_dir / "index.html")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 7860))
-    demo.launch(server_name="0.0.0.0", server_port=port)
+    demo.launch(
+        _app=server_app,
+        server_name="0.0.0.0",
+        server_port=port,
+        allowed_paths=[str(static_dir.resolve()), str(AUDIO_CACHE.resolve())]
+    )
