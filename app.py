@@ -251,6 +251,17 @@ async def transcribe(file: UploadFile = File(...)):
 static_dir = Path("static")
 static_dir.mkdir(exist_ok=True)
 
+@app.get("/app-static/{file_path:path}")
+async def get_app_static(file_path: str):
+    p = static_dir / file_path
+    if p.exists() and p.is_file():
+        return FileResponse(p)
+    return FileResponse(static_dir / "index.html")
+
+@app.get("/index.html")
+async def get_index():
+    return FileResponse(static_dir / "index.html")
+
 # ZeroGPU hook and Gradio wrapper for Hugging Face Spaces compatibility
 try:
     import spaces
@@ -278,21 +289,15 @@ with gr.Blocks(title="Gilgamesh - King of Heroes") as demo:
     footer { display: none !important; }
     #custom-app-frame { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; border: none; z-index: 999999; }
     </style>
-    <iframe id="custom-app-frame" src="/static/index.html"></iframe>
+    <iframe id="custom-app-frame" src="/app-static/index.html"></iframe>
     """)
 
-# Wrap Gradio's App.create_app to inject all custom FastAPI endpoints & static assets
+# Wrap Gradio's App.create_app to prepend all custom FastAPI endpoints before Gradio routes
 _orig_create_app = gr.routes.App.create_app
 
 def _custom_create_app(*args, **kwargs):
     created_app = _orig_create_app(*args, **kwargs)
-    created_app.include_router(app.router)
-    created_app.mount("/static", StaticFiles(directory=str(static_dir)), name="static_dir")
-
-    @created_app.get("/index.html")
-    async def get_index():
-        return FileResponse(static_dir / "index.html")
-
+    created_app.router.routes = app.router.routes + created_app.router.routes
     return created_app
 
 gr.routes.App.create_app = _custom_create_app
