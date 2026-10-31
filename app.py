@@ -253,19 +253,7 @@ static_dir.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static_dir")
 app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="static")
 
-# Gradio compatibility layer for Hugging Face Spaces
-try:
-    import gradio as gr
-    with gr.Blocks(
-        title="Gilgamesh - King of Heroes",
-        css="body, html { margin: 0 !important; padding: 0 !important; height: 100vh !important; width: 100vw !important; overflow: hidden !important; } .gradio-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; } footer { display: none !important; }"
-    ) as demo:
-        gr.HTML('<iframe src="/index.html" style="position:fixed; top:0; left:0; width:100%; height:100%; border:none; z-index:999999;"></iframe>')
-    app = gr.mount_gradio_app(app, demo, path="/gradio")
-except Exception as e:
-    demo = None
-
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 7860))
-    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run(app, host="0.0.0.0", port=port)
