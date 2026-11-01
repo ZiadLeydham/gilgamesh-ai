@@ -235,7 +235,7 @@ async def chat(request: ChatRequest):
             model="qwen/qwen3.8-27b",
             messages=messages,
             temperature=0.85,
-            max_tokens=220,
+            max_tokens=420,
             top_p=0.95
         )
         reply_text = completion.choices[0].message.content
