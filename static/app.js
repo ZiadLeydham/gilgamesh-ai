@@ -542,7 +542,26 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!confirmReset) return;
 
       try {
-        await fetch('/api/reset-chat', { method: 'POST' });
+        if (currentProfile === 'master' && masterPin) {
+          // In Master mode: keep long-term memories intact, start fresh audience in vault
+          try {
+            const unlockRes = await fetch('/api/vault/unlock', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ pin: masterPin })
+            });
+            const vaultData = await unlockRes.json();
+            await fetch('/api/vault/sync', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ history: [], memories: vaultData.memories || {}, pin: masterPin })
+            });
+          } catch (e) {
+            console.warn("Vault sync on reset warning:", e);
+          }
+        } else {
+          await fetch('/api/reset-chat', { method: 'POST' });
+        }
         history = [];
         savedHistoryItems = [];
         localStorage.removeItem('gilgamesh_royal_chronicle');
