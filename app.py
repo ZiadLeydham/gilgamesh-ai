@@ -224,7 +224,7 @@ async def chat(request: ChatRequest):
     messages.extend(FEW_SHOT_EXAMPLES)
     
     # 2. Add expanded conversation history (up to last 24 turns)
-    for msg in request.history[-24:]:
+    for msg in request.history[-12:]:
         messages.append({"role": msg.role, "content": msg.content})
         
     # 3. Add current message
