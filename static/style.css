@@ -302,18 +302,24 @@ body {
 
 .sender-name {
   font-family: var(--font-serif);
-  font-size: 0.85rem;
+  font-size: 1.08rem;
   font-weight: 700;
+  letter-spacing: 0.6px;
   color: var(--gold-bright);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.25);
 }
 
 .user-row .sender-name {
   font-family: var(--font-sans);
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: 0;
   color: #a5b4fc;
+  text-shadow: none;
 }
 
 .msg-time {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
