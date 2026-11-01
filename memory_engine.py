@@ -131,12 +131,17 @@ Respond ONLY with the JSON object, with no markdown code fences or conversationa
     try:
         loop = asyncio.get_running_loop()
         def call_groq():
-            return groq_client.chat.completions.create(
-                model="qwen/qwen3.8-27b",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.2,
-                max_tokens=400
-            )
+            for m in ["qwen/qwen3.8-27b", "openai/gpt-oss-120b"]:
+                try:
+                    return groq_client.chat.completions.create(
+                        model=m,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=0.2,
+                        max_tokens=400
+                    )
+                except Exception as ex:
+                    print(f"Memory extraction fallback from {m}: {ex}")
+            raise RuntimeError("All models failed for memory extraction")
 
         resp = await loop.run_in_executor(None, call_groq)
         raw_text = resp.choices[0].message.content.strip()

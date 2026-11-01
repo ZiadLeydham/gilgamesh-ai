@@ -230,18 +230,34 @@ async def chat(request: ChatRequest):
     # 3. Add current message
     messages.append({"role": "user", "content": request.message})
     
-    try:
-        completion = client.chat.completions.create(
-            model="qwen/qwen3.8-27b",
-            messages=messages,
-            temperature=0.85,
-            max_tokens=420,
-            top_p=0.95
-        )
-        reply_text = completion.choices[0].message.content
-        clean_reply, emotion = detect_emotion(reply_text)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Groq API Error: {str(e)}")
+    models_to_try = [
+        "qwen/qwen3.8-27b",
+        "openai/gpt-oss-120b"
+    ]
+    
+    completion = None
+    last_err = None
+
+    for model_name in models_to_try:
+        try:
+            completion = client.chat.completions.create(
+                model=model_name,
+                messages=messages,
+                temperature=0.85,
+                max_tokens=420,
+                top_p=0.95
+            )
+            break
+        except Exception as e:
+            last_err = str(e)
+            print(f"Warning: Model {model_name} failed: {last_err}. Attempting fallback...")
+            continue
+
+    if not completion:
+        raise HTTPException(status_code=500, detail=f"Groq API Error: {last_err}")
+
+    reply_text = completion.choices[0].message.content
+    clean_reply, emotion = detect_emotion(reply_text)
 
     # 4. Generate speech
     audio_id = f"gil_{uuid.uuid4().hex[:10]}.mp3"
