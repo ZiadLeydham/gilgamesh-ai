@@ -57,8 +57,8 @@ def reset_all_memories():
     save_memories(DEFAULT_MEMORY.copy())
     save_chat_history([])
 
-def format_memory_for_system_prompt() -> str:
-    memories = load_memories()
+def format_memory_for_system_prompt(custom_memories: Optional[dict] = None) -> str:
+    memories = custom_memories if custom_memories is not None else load_memories()
     facts = memories.get("user_facts", [])
     judgments = memories.get("gilgamesh_judgments", [])
     relationship = memories.get("relationship_status", DEFAULT_MEMORY["relationship_status"])
@@ -74,12 +74,12 @@ def format_memory_for_system_prompt() -> str:
 
     if facts:
         lines.append("\n**Known Facts & Desires of this Mortal**:")
-        for fact in facts[-6:]:
+        for fact in facts[-8:]:
             lines.append(f"- {fact}")
 
     if judgments:
         lines.append("\n**Your Decrees & Past Judgments Upon Them**:")
-        for j in judgments[-6:]:
+        for j in judgments[-8:]:
             lines.append(f"- {j}")
 
     lines.append(
@@ -88,27 +88,32 @@ def format_memory_for_system_prompt() -> str:
     )
     return "\n".join(lines)
 
-async def extract_and_update_memories(groq_client, messages: List[dict]):
+async def extract_and_update_memories(
+    groq_client,
+    messages: List[dict],
+    existing_memories: Optional[dict] = None,
+    on_updated = None
+) -> Optional[dict]:
     """
     Background asynchronous task that analyzes recent dialogue and distills long-term memories.
     """
-    if len(messages) < 4:
-        return
+    if len(messages) < 2:
+        return None
 
-    existing_memories = load_memories()
+    memories_to_update = existing_memories if existing_memories is not None else load_memories()
 
     # Build prompt for memory distillation
     recent_dialogue = []
-    for m in messages[-10:]:
+    for m in messages[-14:]:
         role = "User" if m.get("role") == "user" else "Gilgamesh"
         content = m.get("content", "").replace("\n", " ").strip()
         recent_dialogue.append(f"{role}: {content}")
 
     dialogue_str = "\n".join(recent_dialogue)
-    current_json = json.dumps(existing_memories, indent=2)
+    current_json = json.dumps(memories_to_update, indent=2)
 
-    prompt = f"""You are the chronicler of Gilgamesh, King of Heroes.
-Analyze the ongoing conversation between Gilgamesh and the mortal User, and update the long-term memory record.
+    prompt = f"""You are the royal chronicler of Gilgamesh, King of Heroes.
+Analyze the ongoing conversation between Gilgamesh and the mortal User, and update the long-term memory record (The Royal Tablet of Destinies).
 
 Current Memory Record:
 {current_json}
@@ -117,9 +122,9 @@ Recent Dialogue:
 {dialogue_str}
 
 Output a strictly valid JSON object with these 3 keys:
-1. "user_facts": Array of 3-6 concise, persistent facts about the user (their life situation, struggles, desires, personality traits). Preserve existing valid ones, update or add new ones.
-2. "gilgamesh_judgments": Array of 3-6 concise decrees, tough-love advice, or personal judgments Gilgamesh made about this user.
-3. "relationship_status": A single evocative sentence describing Gilgamesh's current personal view of this mortal (e.g. "An audacious mortal who proved their spine and was granted kingly mentorship").
+1. "user_facts": Array of up to 8 concise, persistent facts about the user (their life situation, struggles, desires, personality traits, secrets shared). Preserve existing valid ones, update or add new ones.
+2. "gilgamesh_judgments": Array of up to 8 concise decrees, tough-love advice, challenges, or personal judgments Gilgamesh made about this user.
+3. "relationship_status": A single evocative sentence describing Gilgamesh's current personal view of this mortal (e.g. "An audacious mortal whose spine has proven worthy of royal amusement and guidance").
 
 Respond ONLY with the JSON object, with no markdown code fences or conversational filler."""
 
@@ -145,7 +150,15 @@ Respond ONLY with the JSON object, with no markdown code fences or conversationa
 
         new_data = json.loads(raw_text)
         if isinstance(new_data, dict) and "user_facts" in new_data:
-            save_memories(new_data)
+            if existing_memories is None:
+                save_memories(new_data)
+            if on_updated and callable(on_updated):
+                res = on_updated(new_data)
+                if asyncio.iscoroutine(res):
+                    await res
             print("The Royal Tablet of Destinies updated successfully.")
+            return new_data
+        return None
     except Exception as e:
         print(f"Memory extraction background note: {e}")
+        return None

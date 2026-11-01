@@ -27,9 +27,15 @@ from tts_engine import voice_engine, detect_emotion, DEFAULT_FISH_MODEL_ID
 from memory_engine import (
     load_chat_history,
     save_chat_history,
+    load_memories,
+    save_memories,
     reset_all_memories,
     format_memory_for_system_prompt,
     extract_and_update_memories
+)
+from cloud_vault import (
+    pull_vault_from_github,
+    push_vault_to_github
 )
 
 # Load environment
@@ -51,6 +57,16 @@ class Message(BaseModel):
 class ChatRequest(BaseModel):
     message: str
     history: Optional[List[Message]] = []
+    profile: Optional[str] = "guest"
+    pin: Optional[str] = None
+
+class VaultUnlockRequest(BaseModel):
+    pin: str
+
+class VaultSyncRequest(BaseModel):
+    pin: str
+    history: List[dict] = []
+    memories: Optional[dict] = None
 
 class SettingsRequest(BaseModel):
     groq_api_key: Optional[str] = None
@@ -104,9 +120,53 @@ async def get_status():
         "model": "qwen/qwen3.8-27b"
     }
 
+class SyncChronicleRequest(BaseModel):
+    history: List[dict] = []
+    memories: Optional[dict] = None
+
 @app.get("/api/history")
 async def get_history():
     return load_chat_history()
+
+@app.get("/api/export-chronicle")
+async def export_chronicle():
+    return {
+        "history": load_chat_history(),
+        "memories": load_memories()
+    }
+
+@app.post("/api/sync-chronicle")
+async def sync_chronicle(req: SyncChronicleRequest):
+    if req.history:
+        save_chat_history(req.history)
+    if req.memories:
+        save_memories(req.memories)
+    return {
+        "status": "success",
+        "message": "The Royal Chronicle has been restored to the Throne.",
+        "history_count": len(req.history),
+        "has_memories": bool(req.memories)
+    }
+
+@app.post("/api/vault/unlock")
+async def unlock_vault(req: VaultUnlockRequest):
+    ok, data, msg = pull_vault_from_github(req.pin)
+    if not ok:
+        raise HTTPException(status_code=401, detail=msg)
+    return {
+        "success": True,
+        "message": msg,
+        "history": data.get("history", []),
+        "memories": data.get("memories", {}),
+        "initialized": data.get("initialized", False)
+    }
+
+@app.post("/api/vault/sync")
+async def sync_vault(req: VaultSyncRequest):
+    ok, msg = push_vault_to_github({"history": req.history, "memories": req.memories}, req.pin)
+    if not ok:
+        raise HTTPException(status_code=500, detail=msg)
+    return {"success": True, "message": msg}
 
 @app.post("/api/reset-chat")
 async def reset_chat():
@@ -142,9 +202,21 @@ async def set_key(api_key: str = Form(...)):
 async def chat(request: ChatRequest):
     client = get_groq_client()
     
+    profile = (request.profile or "guest").lower()
+    is_master = (profile == "master")
+    pin = request.pin
+
+    master_memories = None
+    if is_master:
+        if not pin:
+            raise HTTPException(status_code=401, detail="Master Profile requires Royal PIN.")
+        ok, vault_data, _ = pull_vault_from_github(pin)
+        if ok and isinstance(vault_data, dict):
+            master_memories = vault_data.get("memories")
+
     # 1. Inject persistent long-term memories into system persona
     system_content = GILGAMESH_SYSTEM_PROMPT
-    memory_context = format_memory_for_system_prompt()
+    memory_context = format_memory_for_system_prompt(master_memories if is_master else None)
     if memory_context:
         system_content += memory_context
 
@@ -195,16 +267,23 @@ async def chat(request: ChatRequest):
         print(f"TTS Error: {e}")
         audio_url = None
 
-    # 5. Persist updated chat history to disk
+    # 5. Persist updated chat history
     full_history = []
     for m in request.history:
         full_history.append(m.model_dump())
     full_history.append({"role": "user", "content": request.message})
     full_history.append({"role": "assistant", "content": clean_reply, "audio_url": audio_url, "emotion": emotion})
-    save_chat_history(full_history)
 
-    # 6. Asynchronously update long-term memories in background
-    asyncio.create_task(extract_and_update_memories(client, full_history))
+    if is_master and pin:
+        async def on_master_updated(new_memories):
+            push_vault_to_github({"history": full_history, "memories": new_memories}, pin)
+
+        asyncio.create_task(extract_and_update_memories(
+            client, full_history, existing_memories=master_memories, on_updated=on_master_updated
+        ))
+    else:
+        save_chat_history(full_history)
+        asyncio.create_task(extract_and_update_memories(client, full_history))
 
     return {
         "reply": clean_reply,

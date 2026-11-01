@@ -41,6 +41,38 @@ document.addEventListener('DOMContentLoaded', () => {
   const noiseFilterCheckbox = document.getElementById('noise-filter-checkbox');
   let isFilterActive = true;
 
+  // Profile & Sanctum PIN Elements
+  const profileToggleBtn = document.getElementById('profile-toggle-btn');
+  const profileIcon = document.getElementById('profile-icon');
+  const profileLabel = document.getElementById('profile-label');
+  const pinModal = document.getElementById('pin-modal');
+  const closePinModal = document.getElementById('close-pin-modal');
+  const vaultPinInput = document.getElementById('vault-pin-input');
+  const unlockVaultBtn = document.getElementById('unlock-vault-btn');
+  const pinErrorMsg = document.getElementById('pin-error-msg');
+
+  let currentProfile = 'guest'; // 'guest' or 'master'
+  let masterPin = '';
+
+  function updateProfileUI(mode) {
+    currentProfile = mode;
+    if (mode === 'master') {
+      if (profileToggleBtn) {
+        profileToggleBtn.className = 'icon-btn profile-btn master';
+        profileToggleBtn.title = "Master Profile Active (Click to Lock Vault & Switch to Guest)";
+      }
+      if (profileIcon) profileIcon.textContent = '👑';
+      if (profileLabel) profileLabel.textContent = 'Master (Owner)';
+    } else {
+      if (profileToggleBtn) {
+        profileToggleBtn.className = 'icon-btn profile-btn guest';
+        profileToggleBtn.title = "Guest Mode Active (Click to Enter Royal PIN for Master Profile)";
+      }
+      if (profileIcon) profileIcon.textContent = '⚔️';
+      if (profileLabel) profileLabel.textContent = 'Guest Mode';
+    }
+  }
+
   function updateFilterUI(active) {
     isFilterActive = !!active;
     if (filterBtnLabel) {
@@ -282,30 +314,334 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scroll) scrollToBottom();
   }
 
-  // Load chat history from backend on initial connection
-  async function loadHistory() {
+  // Chronicle Export & Import Elements
+  const exportChatBtn = document.getElementById('export-chat-btn');
+  const importChatBtn = document.getElementById('import-chat-btn');
+  const importFileInput = document.getElementById('import-file-input');
+  const modalExportBtn = document.getElementById('modal-export-btn');
+  const modalImportBtn = document.getElementById('modal-import-btn');
+
+  let savedHistoryItems = [];
+
+  function saveToLocalStorage(chatItems) {
     try {
-      const res = await fetch('/api/history');
-      const savedHistory = await res.json();
-      if (Array.isArray(savedHistory) && savedHistory.length > 0) {
-        chatMessages.innerHTML = ''; // Replace initial greeting with ongoing conversation
-        history = [];
-        savedHistory.forEach(item => {
-          history.push({ role: item.role, content: item.content });
-          if (item.role === 'user') {
-            appendUserMessage(item.content, false);
-          } else {
-            appendGilgameshMessage(item.content, item.audio_url, item.emotion || 'haughty', false);
-          }
-        });
-        setTimeout(scrollToBottom, 150);
-      }
-    } catch (err) {
-      console.error("Failed to load conversation history:", err);
+      localStorage.setItem('gilgamesh_royal_chronicle', JSON.stringify({
+        history: chatItems,
+        timestamp: Date.now()
+      }));
+    } catch (e) {
+      console.warn("LocalStorage save error:", e);
     }
   }
 
-  loadHistory();
+  function getFromLocalStorage() {
+    try {
+      const raw = localStorage.getItem('gilgamesh_royal_chronicle');
+      if (raw) return JSON.parse(raw);
+    } catch (e) {
+      console.warn("LocalStorage read error:", e);
+    }
+    return null;
+  }
+
+  function renderFullHistory(items) {
+    chatMessages.innerHTML = '';
+    history = [];
+    savedHistoryItems = [...items];
+    items.forEach(item => {
+      history.push({ role: item.role, content: item.content });
+      if (item.role === 'user') {
+        appendUserMessage(item.content, false);
+      } else {
+        appendGilgameshMessage(item.content, item.audio_url, item.emotion || 'haughty', false);
+      }
+    });
+    setTimeout(scrollToBottom, 150);
+  }
+
+  // Profile & PIN Handlers
+  if (profileToggleBtn) {
+    profileToggleBtn.addEventListener('click', () => {
+      if (currentProfile === 'master') {
+        const lock = confirm("Lock Master Profile and switch to Guest Mode? Your private memories and chat history will remain securely encrypted in the cloud.");
+        if (lock) {
+          currentProfile = 'guest';
+          masterPin = '';
+          sessionStorage.removeItem('gil_master_pin');
+          updateProfileUI('guest');
+          loadGuestWelcome();
+        }
+      } else {
+        if (pinModal) {
+          pinModal.style.display = 'flex';
+          if (pinErrorMsg) {
+            pinErrorMsg.textContent = '';
+          }
+          if (vaultPinInput) {
+            vaultPinInput.value = '';
+            setTimeout(() => vaultPinInput.focus(), 100);
+          }
+        }
+      }
+    });
+  }
+
+  if (closePinModal) {
+    closePinModal.addEventListener('click', () => {
+      if (pinModal) pinModal.style.display = 'none';
+    });
+  }
+
+  // Close modals when clicking backdrop
+  window.addEventListener('click', (e) => {
+    if (e.target === pinModal) pinModal.style.display = 'none';
+    if (e.target === settingsModal) settingsModal.style.display = 'none';
+  });
+
+  async function attemptUnlockVault(pinToTest, isAuto = false) {
+    const pin = (pinToTest || (vaultPinInput ? vaultPinInput.value : '')).trim();
+    if (!pin) {
+      if (pinErrorMsg) pinErrorMsg.textContent = "Please enter your Royal PIN.";
+      return;
+    }
+    if (pinErrorMsg && !isAuto) {
+      pinErrorMsg.textContent = "Unsealing the King's Inner Sanctum from GitHub...";
+      pinErrorMsg.style.color = "var(--gold-bright)";
+    }
+
+    try {
+      const res = await fetch('/api/vault/unlock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: pin })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (pinErrorMsg && !isAuto) {
+          pinErrorMsg.textContent = data.detail || "Incorrect Royal PIN.";
+          pinErrorMsg.style.color = "#ef4444";
+        }
+        if (isAuto) {
+          sessionStorage.removeItem('gil_master_pin');
+          const savedSessionPin = sessionStorage.getItem('gil_master_pin');
+  if (savedSessionPin) {
+    attemptUnlockVault(savedSessionPin, true);
+  } else {
+    loadHistory();
+  }
+        }
+        return;
+      }
+
+      // Success!
+      masterPin = pin;
+      sessionStorage.setItem('gil_master_pin', pin);
+      updateProfileUI('master');
+      if (pinModal) pinModal.style.display = 'none';
+
+      if (Array.isArray(data.history) && data.history.length > 0) {
+        renderFullHistory(data.history);
+      } else {
+        chatMessages.innerHTML = `
+          <div class="message-row gilgamesh-row">
+            <div class="msg-avatar">
+              <img src="https://images.alphacoders.com/605/thumb-1920-605592.png" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+            </div>
+            <div class="msg-bubble">
+              <div class="msg-header">
+                <span class="sender-name">Gilgamesh 👑</span>
+                <span class="msg-time">Inner Sanctum Unlocked</span>
+              </div>
+              <div class="msg-content">
+                <span class="action">*The heavy golden gates of Babylon swing open with an echoing rumble, welcoming only the one true Master back into the King's presence.*</span>
+                "Welcome back, Master. The Royal Vault has recognized your seal. Every word we share here is written into eternity upon my tablet and synced across your devices. Speak—what shall we discuss today?"
+              </div>
+            </div>
+          </div>
+        `;
+        history = [];
+        savedHistoryItems = [];
+        scrollToBottom();
+      }
+    } catch (err) {
+      if (pinErrorMsg && !isAuto) {
+        pinErrorMsg.textContent = "Connection error: " + err.message;
+        pinErrorMsg.style.color = "#ef4444";
+      }
+      if (isAuto) loadHistory();
+    }
+  }
+
+  if (unlockVaultBtn) {
+    unlockVaultBtn.addEventListener('click', () => attemptUnlockVault());
+  }
+
+  if (vaultPinInput) {
+    vaultPinInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        attemptUnlockVault();
+      }
+    });
+  }
+
+  function loadGuestWelcome() {
+    chatMessages.innerHTML = `
+      <div class="message-row gilgamesh-row">
+        <div class="msg-avatar">
+          <img src="https://images.alphacoders.com/605/thumb-1920-605592.png" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+        </div>
+        <div class="msg-bubble">
+          <div class="msg-header">
+            <span class="sender-name">Gilgamesh</span>
+            <span class="msg-time">Guest Audience</span>
+          </div>
+          <div class="msg-content">
+            <span class="action">*He sits reclined upon a lavish golden throne, a jewel-encrusted goblet of ancient vintage resting casually between his fingers.*</span>
+            "You stand in the presence of the King of Heroes in Guest Mode. Speak your mind, mongrel—though remember, only the true Master possesses the seal to the inner treasury."
+          </div>
+        </div>
+      </div>
+    `;
+    history = [];
+    savedHistoryItems = [];
+    scrollToBottom();
+  }
+
+  // Load chat history from backend on initial connection (with LocalStorage failover)
+  async function loadHistory() {
+    try {
+      let savedHistory = [];
+      try {
+        const res = await fetch('/api/history');
+        if (res.ok) {
+          savedHistory = await res.json();
+        }
+      } catch (e) {}
+
+      // If backend was reset (e.g. Render container cold restart), restore from local device
+      if (!Array.isArray(savedHistory) || savedHistory.length === 0) {
+        const localData = getFromLocalStorage();
+        if (localData && Array.isArray(localData.history) && localData.history.length > 0) {
+          savedHistory = localData.history;
+          // Re-hydrate backend memories and chat history
+          fetch('/api/sync-chronicle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ history: savedHistory, memories: localData.memories || null })
+          }).catch(e => console.warn("Backend sync notice:", e));
+        }
+      }
+
+      if (Array.isArray(savedHistory) && savedHistory.length > 0) {
+        renderFullHistory(savedHistory);
+        saveToLocalStorage(savedHistory);
+      }
+    } catch (err) {
+      console.error("Failed to load conversation history:", err);
+      const localData = getFromLocalStorage();
+      if (localData && Array.isArray(localData.history)) {
+        renderFullHistory(localData.history);
+      }
+    }
+  }
+
+  const savedSessionPin = sessionStorage.getItem('gil_master_pin');
+  if (savedSessionPin) {
+    attemptUnlockVault(savedSessionPin, true);
+  } else {
+    loadHistory();
+  }
+
+  // Export Chronicle Handler
+  async function exportChronicle() {
+    try {
+      let exportData = {
+        history: savedHistoryItems,
+        exported_at: new Date().toISOString()
+      };
+      try {
+        const res = await fetch('/api/export-chronicle');
+        if (res.ok) {
+          const cloudData = await res.json();
+          if (cloudData.memories) exportData.memories = cloudData.memories;
+          if (Array.isArray(cloudData.history) && cloudData.history.length > 0) {
+            exportData.history = cloudData.history;
+          }
+        }
+      } catch (e) {}
+
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const filename = `gilgamesh_royal_chronicle_${dateStr}.json`;
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Failed to export chronicle: " + err.message);
+    }
+  }
+
+  if (exportChatBtn) exportChatBtn.addEventListener('click', exportChronicle);
+  if (modalExportBtn) modalExportBtn.addEventListener('click', exportChronicle);
+
+  // Import Chronicle Handler
+  function triggerImport() {
+    if (importFileInput) importFileInput.click();
+  }
+
+  if (importChatBtn) importChatBtn.addEventListener('click', triggerImport);
+  if (modalImportBtn) modalImportBtn.addEventListener('click', triggerImport);
+
+  if (importFileInput) {
+    importFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const parsed = JSON.parse(event.target.result);
+          let historyToRestore = [];
+          let memoriesToRestore = null;
+
+          if (Array.isArray(parsed)) {
+            historyToRestore = parsed;
+          } else if (parsed && typeof parsed === 'object') {
+            historyToRestore = parsed.history || [];
+            memoriesToRestore = parsed.memories || null;
+          }
+
+          if (!historyToRestore || historyToRestore.length === 0) {
+            alert("No valid messages found in this file.");
+            return;
+          }
+
+          // Sync to backend
+          await fetch('/api/sync-chronicle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ history: historyToRestore, memories: memoriesToRestore })
+          });
+
+          // Render in UI & save to LocalStorage
+          renderFullHistory(historyToRestore);
+          saveToLocalStorage(historyToRestore);
+          alert(`The Royal Chronicle has been restored! The King remembers your ${historyToRestore.length} past messages.`);
+        } catch (err) {
+          alert("Error importing file: " + err.message);
+        } finally {
+          importFileInput.value = '';
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
 
   // Reset / New Audience Handler
   if (newChatBtn) {
@@ -316,6 +652,8 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await fetch('/api/reset-chat', { method: 'POST' });
         history = [];
+        savedHistoryItems = [];
+        localStorage.removeItem('gilgamesh_royal_chronicle');
         chatMessages.innerHTML = `
           <div class="message-row gilgamesh-row">
             <div class="msg-avatar">
@@ -386,10 +724,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
+      const chatPayload = {
+        message: text,
+        history: history,
+        profile: currentProfile
+      };
+      if (currentProfile === 'master' && masterPin) {
+        chatPayload.pin = masterPin;
+      }
+
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history: history })
+        body: JSON.stringify(chatPayload)
       });
 
       const data = await res.json();
@@ -403,6 +750,16 @@ document.addEventListener('DOMContentLoaded', () => {
       history.push({ role: "assistant", content: data.reply });
       currentEmotion = data.emotion || 'haughty';
       appendGilgameshMessage(data.reply, data.audio_url, currentEmotion);
+
+      // Persist to local device storage automatically
+      savedHistoryItems.push({ role: "user", content: text });
+      savedHistoryItems.push({
+        role: "assistant",
+        content: data.reply,
+        audio_url: data.audio_url,
+        emotion: currentEmotion
+      });
+      saveToLocalStorage(savedHistoryItems);
 
       if (data.audio_url) {
         globalAudio.src = data.audio_url;

@@ -152,6 +152,23 @@ body {
   color: var(--gold-bright);
 }
 
+.profile-btn {
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-btn.guest {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.profile-btn.master {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.35), rgba(184, 134, 11, 0.2));
+  border-color: var(--gold-bright);
+  color: var(--gold-bright);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.35);
+}
+
 .filter-btn {
   font-size: 0.78rem;
   font-weight: 600;

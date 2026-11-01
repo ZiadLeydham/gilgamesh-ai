@@ -25,10 +25,31 @@
       </div>
       
       <div class="header-actions">
+        <button id="profile-toggle-btn" class="icon-btn profile-btn guest" title="Switch Audience Profile (Master Vault vs Guest)">
+          <span id="profile-icon">⚔️</span>
+          <span id="profile-label">Guest Mode</span>
+        </button>
         <button id="filter-toggle-btn" class="icon-btn filter-btn active" title="Toggle Acoustic De-Harshness Filter (Compare With / Without)">
           <span id="filter-btn-icon">⚡</span>
           <span id="filter-btn-label">Filter: ON</span>
         </button>
+        <button id="export-chat-btn" class="icon-btn" title="Download Royal Chronicle (Export Conversation & Long-Term Memories)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Export</span>
+        </button>
+        <button id="import-chat-btn" class="icon-btn" title="Restore Royal Chronicle (Upload Saved Chat & Memories)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <span>Import</span>
+        </button>
+        <input type="file" id="import-file-input" accept=".json" style="display: none;">
         <button id="call-toggle-btn" class="icon-btn live-call-btn" title="Start Live Voice Call">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
@@ -148,6 +169,26 @@
     </div>
   </div>
 
+  <!-- Master Profile PIN Lock Modal -->
+  <div id="pin-modal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 420px; text-align: center;">
+      <div class="modal-header" style="justify-content: center; position: relative;">
+        <h2 style="font-family: 'Cinzel', serif; color: var(--gold-bright); font-size: 1.15rem;">👑 King's Inner Sanctum</h2>
+        <button id="close-pin-modal" class="close-btn" style="position: absolute; right: 0;">&times;</button>
+      </div>
+      <div class="modal-body" style="padding-top: 10px;">
+        <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 16px;">
+          Enter your Royal PIN to unlock your private cloud-synced memories, personal relationship standing, and dedicated audience with Gilgamesh.
+        </p>
+        <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 12px;">
+          <input type="password" id="vault-pin-input" maxlength="20" placeholder="Enter PIN (e.g. 1234)" style="width: 100%; text-align: center; letter-spacing: 4px; font-size: 1.2rem; font-weight: 700; padding: 12px;" autocomplete="current-password">
+        </div>
+        <button id="unlock-vault-btn" class="primary-btn" style="width: 100%;">Unlock Master Vault</button>
+        <div id="pin-error-msg" style="margin-top: 12px; font-size: 0.8rem; color: #ef4444; min-height: 1.2rem;"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Settings / Voice Engine Modal -->
   <div id="settings-modal" class="modal" style="display: none;">
     <div class="modal-content">
@@ -193,6 +234,19 @@
             <p class="help-text" style="margin-top: 4px; font-size: 0.78rem;">
               When checked (ON): Softens rage to deep cold fury, cuts &gt;11.5 kHz vocoder noise, and limits clipping. When unchecked (OFF): Delivers raw unprocessed model output.
             </p>
+          </div>
+        </div>
+
+        <div style="margin-top: 18px; padding: 14px; border: 1px solid rgba(255, 215, 0, 0.25); border-radius: 8px; background: rgba(20, 15, 5, 0.6);">
+          <h3 style="font-family: 'Cinzel', serif; color: var(--gold-primary); font-size: 0.95rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+            <span>📜</span> The Royal Chronicle (Memory Backup)
+          </h3>
+          <p class="help-text" style="margin-bottom: 12px; font-size: 0.8rem;">
+            Export or import your full conversation and Gilgamesh's long-term memory of you. Save a backup to your device anytime or restore previous memories across devices.
+          </p>
+          <div style="display: flex; gap: 10px;">
+            <button id="modal-export-btn" class="icon-btn" style="flex: 1; justify-content: center; background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.3);">📥 Export Memory File</button>
+            <button id="modal-import-btn" class="icon-btn" style="flex: 1; justify-content: center; background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.3);">📤 Import Memory File</button>
           </div>
         </div>
 
