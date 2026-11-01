@@ -133,8 +133,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Message Formatter: converts *actions* to italic golden text and [emotion] or (emotion) to stylish inline badges
   function formatGilgameshText(raw) {
-    const actionRegex = /\*(.*?)\*/g;
-    let formatted = raw.replace(actionRegex, '<span class="action">*$1*</span>');
+    // 1. Opening roleplay action block
+    let formatted = raw.replace(/^\s*\*([^*]+)\*\s*/, '<div class="action-block">*$1*</div>');
+    // 2. Inline emphasis words (*see* -> <em>see</em>)
+    formatted = formatted.replace(/\*([^*]+)\*/g, '<em class="italic-emphasis">$1</em>');
 
     // Native Fish Audio [...] and ElevenLabs (...) inline stage direction badges
     const emoRegex = /[\[\(]([a-zA-Z\s,]+)[\]\)]/g;

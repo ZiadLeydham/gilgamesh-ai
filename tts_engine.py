@@ -102,16 +102,44 @@ EMOTION_PROFILES = {
     }
 }
 
+def strip_roleplay_actions_only(text: str) -> str:
+    """
+    Cleverly strips roleplay stage directions (e.g. *He sighs softly.*) while
+    preserving words with asterisks used for emphasis/italics (e.g. *see*, *exist*, *is*).
+    """
+    # 1. Any asterisks inside quotes are strictly emphasis: strip the asterisks, keep the words
+    def de_asterisk_quotes(m):
+        return re.sub(r"\*+", "", m.group(0))
+
+    cleaned = re.sub(r'"[^"]*"', de_asterisk_quotes, text)
+    cleaned = re.sub(r'“[^”]*”', de_asterisk_quotes, cleaned)
+
+    action_indicators = [
+        'he ', 'she ', 'his ', 'her ', 'smirk', 'laugh', 'chuckle', 'sigh',
+        'recline', 'gaze', 'glance', 'look', 'stand', 'turn', 'nod', 'frown',
+        'wave', 'closes', 'eyes', 'sets down', 'swirling'
+    ]
+
+    def handle_outer_asterisks(m):
+        inner = m.group(1).strip()
+        words = inner.split()
+        lower = inner.lower()
+        if len(words) <= 2 and not any(v in lower for v in action_indicators):
+            return inner  # It's an emphasized word: keep it for speech!
+        return ''  # It's a stage direction: omit it for speech
+
+    cleaned = re.sub(r"\*+(.*?)\*+", handle_outer_asterisks, cleaned)
+    return cleaned
+
 def clean_spoken_line(text: str) -> str:
     """
     Cleans an individual spoken line for tight, fluid, natural cadence:
-    - Removes roleplay actions in asterisks (*smirks*).
+    - Removes roleplay actions in asterisks (*smirks*) while keeping emphasized words (*see* -> see).
     - Removes all quotes.
     - Replaces dramatic ellipses with a simple single comma or space to prevent dead pauses.
     - Normalizes double punctuation (!! -> !).
     """
-    cleaned = re.sub(r"\*.*?\*", "", text)
-    cleaned = re.sub(r"\*\*.*?\*\*", "", cleaned)
+    cleaned = strip_roleplay_actions_only(text)
     cleaned = re.sub(r'["\'`]', '', cleaned)
     
     # Replace ellipses with a natural short breath (comma) or space
@@ -134,9 +162,8 @@ def parse_emotional_segments(text: str) -> List[Tuple[str, str]]:
     """
     pattern = r'[\(\[]([a-zA-Z\s,]+)[\)\]]'
     
-    # Strip asterisks actions first
-    speech_text = re.sub(r"\*.*?\*", "", text)
-    speech_text = re.sub(r"\*\*.*?\*\*", "", speech_text)
+    # Strip asterisks actions while preserving emphasized words (*see* -> see)
+    speech_text = strip_roleplay_actions_only(text)
     
     splits = re.split(pattern, speech_text)
     segments = []
@@ -316,9 +343,8 @@ def format_for_fish_audio(text: str, noise_filter: bool = True) -> str:
     - If noise_filter is False: preserves raw tags exactly as generated.
     - Preserves native cues ([laughing], [arrogant laughter], [calm], [whispering], [solemn], [sigh], [haughty]).
     """
-    # 1. Remove roleplay asterisks actions
-    clean = re.sub(r"\*.*?\*", "", text)
-    clean = re.sub(r"\*\*.*?\*\*", "", clean)
+    # 1. Remove roleplay actions while preserving emphasized dialogue words (*see* -> see)
+    clean = strip_roleplay_actions_only(text)
 
     # 2. Convert any remaining parentheses emotion tags to Fish square brackets
     clean = re.sub(r"\(([a-zA-Z\s,]+)\)", r"[\1]", clean)

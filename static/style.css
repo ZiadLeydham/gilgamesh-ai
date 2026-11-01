@@ -330,12 +330,27 @@ body {
 }
 
 .msg-content .action {
+  font-style: italic;
+  color: var(--text-action);
+}
+
+.msg-content .action-block {
   display: block;
   font-style: italic;
   color: var(--text-action);
   margin-bottom: 8px;
   border-left: 2px solid rgba(212, 175, 55, 0.4);
   padding-left: 10px;
+}
+
+.msg-content em, .msg-content .italic-emphasis {
+  font-style: italic;
+  color: #f7d377;
+  font-weight: 500;
+  display: inline;
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
 /* ElevenLabs-style Inline Emotion Badges */
