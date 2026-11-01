@@ -252,7 +252,7 @@ async def chat(request: ChatRequest):
                         model=g_model,
                         messages=messages,
                         temperature=0.85,
-                        max_tokens=420
+                        max_tokens=800
                     )
                     content = resp.choices[0].message.content
                     if content and content.strip():
@@ -267,11 +267,17 @@ async def chat(request: ChatRequest):
 
     # 2. Fallback: Groq Multi-Model (Qwen 27B -> GPT-OSS 120B)
     if not reply_text and groq_key:
-        for model_name in ["qwen/qwen3.8-27b", "openai/gpt-oss-120b"]:
+        groq_messages = [{"role": "system", "content": system_content}]
+        groq_messages.extend(FEW_SHOT_EXAMPLES)
+        for m_hist in request.history[-4:]:
+            groq_messages.append({"role": m_hist.role, "content": m_hist.content})
+        groq_messages.append({"role": "user", "content": request.message})
+
+        for model_name in ["openai/gpt-oss-120b", "qwen/qwen3.8-27b"]:
             try:
                 comp = client.chat.completions.create(
                     model=model_name,
-                    messages=messages,
+                    messages=groq_messages,
                     temperature=0.85,
                     max_tokens=420,
                     top_p=0.95
