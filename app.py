@@ -105,19 +105,22 @@ def get_groq_client() -> Groq:
 
 @app.get("/api/status")
 async def get_status():
-    groq_key = os.getenv("GROQ_API_KEY", "")
-    fish_key = os.getenv("FISH_API_KEY", "")
+    groq_key = os.getenv("GROQ_API_KEY", "").strip()
+    gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
+    fish_key = os.getenv("FISH_API_KEY", "").strip()
     engine = os.getenv("VOICE_ENGINE", "rvc")
     fish_model = os.getenv("FISH_MODEL_ID", DEFAULT_FISH_MODEL_ID)
     noise_filter = os.getenv("NOISE_FILTER", "true").lower() == "true"
+    active_model = "gemini-3.5-flash" if gemini_key else "qwen/qwen3.8-27b"
     return {
-        "configured": bool(groq_key and groq_key.strip()),
+        "configured": bool(groq_key or gemini_key),
         "character": "Gilgamesh (Archer & Caster)",
         "voice_engine": engine,
-        "has_fish_key": bool(fish_key and fish_key.strip()),
+        "has_fish_key": bool(fish_key),
         "fish_model": fish_model,
         "noise_filter": noise_filter,
-        "model": "qwen/qwen3.8-27b"
+        "model": active_model,
+        "has_gemini": bool(gemini_key)
     }
 
 class SyncChronicleRequest(BaseModel):
@@ -230,33 +233,60 @@ async def chat(request: ChatRequest):
     # 3. Add current message
     messages.append({"role": "user", "content": request.message})
     
-    models_to_try = [
-        "qwen/qwen3.8-27b",
-        "openai/gpt-oss-120b"
-    ]
-    
-    completion = None
+    gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
+    groq_key = os.getenv("GROQ_API_KEY", "").strip()
+    reply_text = None
     last_err = None
 
-    for model_name in models_to_try:
+    # 1. Primary: Google Gemini (1 Million Token Window + 1,500 Requests/Day)
+    if gemini_key:
         try:
-            completion = client.chat.completions.create(
-                model=model_name,
-                messages=messages,
-                temperature=0.85,
-                max_tokens=420,
-                top_p=0.95
+            from openai import OpenAI
+            gemini_client = OpenAI(
+                base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+                api_key=gemini_key
             )
-            break
-        except Exception as e:
-            last_err = str(e)
-            print(f"Warning: Model {model_name} failed: {last_err}. Attempting fallback...")
-            continue
+            for g_model in ["gemini-3.5-flash", "gemini-flash-lite-latest"]:
+                try:
+                    resp = gemini_client.chat.completions.create(
+                        model=g_model,
+                        messages=messages,
+                        temperature=0.85,
+                        max_tokens=420
+                    )
+                    content = resp.choices[0].message.content
+                    if content and content.strip():
+                        reply_text = content
+                        break
+                except Exception as ge:
+                    print(f"Gemini {g_model} failed: {ge}")
+                    last_err = str(ge)
+        except Exception as ce:
+            print(f"Gemini client setup error: {ce}")
+            last_err = str(ce)
 
-    if not completion:
-        raise HTTPException(status_code=500, detail=f"Groq API Error: {last_err}")
+    # 2. Fallback: Groq Multi-Model (Qwen 27B -> GPT-OSS 120B)
+    if not reply_text and groq_key:
+        for model_name in ["qwen/qwen3.8-27b", "openai/gpt-oss-120b"]:
+            try:
+                comp = client.chat.completions.create(
+                    model=model_name,
+                    messages=messages,
+                    temperature=0.85,
+                    max_tokens=420,
+                    top_p=0.95
+                )
+                content = comp.choices[0].message.content
+                if content and content.strip():
+                    reply_text = content
+                    break
+            except Exception as e:
+                last_err = str(e)
+                print(f"Groq {model_name} failed: {last_err}. Trying fallback...")
+                continue
 
-    reply_text = completion.choices[0].message.content
+    if not reply_text:
+        raise HTTPException(status_code=500, detail=f"LLM Inference Error: {last_err}")
     clean_reply, emotion = detect_emotion(reply_text)
 
     # 4. Generate speech
