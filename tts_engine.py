@@ -129,7 +129,16 @@ def strip_roleplay_actions_only(text: str) -> str:
         return ''  # It's a stage direction: omit it for speech
 
     cleaned = re.sub(r"\*+(.*?)\*+", handle_outer_asterisks, cleaned)
-    return cleaned
+
+    # 3. Handle unclosed asterisks (e.g. truncated generation: *He looks at you...)
+    if cleaned.strip().startswith("*"):
+        match = re.search(r'["\[\(]', cleaned)
+        if match:
+            cleaned = cleaned[match.start():]
+        else:
+            cleaned = ""
+
+    return cleaned.strip()
 
 def clean_spoken_line(text: str) -> str:
     """

@@ -246,13 +246,13 @@ async def chat(request: ChatRequest):
                 base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
                 api_key=gemini_key
             )
-            for g_model in ["gemini-3.5-flash", "gemini-flash-lite-latest"]:
+            for g_model in ["gemini-flash-lite-latest", "gemini-3.5-flash"]:
                 try:
                     resp = gemini_client.chat.completions.create(
                         model=g_model,
                         messages=messages,
                         temperature=0.85,
-                        max_tokens=800
+                        max_tokens=1200
                     )
                     content = resp.choices[0].message.content
                     if content and content.strip():
