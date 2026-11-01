@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     row.innerHTML = `
       <div class="msg-avatar">
-        <img src="https://images.alphacoders.com/605/thumb-1920-605592.png" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+        <img src="/static/avatar.jpg" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
       </div>
       <div class="msg-bubble">
         <div class="msg-header">
@@ -445,7 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.innerHTML = `
           <div class="message-row gilgamesh-row">
             <div class="msg-avatar">
-              <img src="https://images.alphacoders.com/605/thumb-1920-605592.png" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+              <img src="/static/avatar.jpg" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
             </div>
             <div class="msg-bubble">
               <div class="msg-header">
@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chatMessages.innerHTML = `
       <div class="message-row gilgamesh-row">
         <div class="msg-avatar">
-          <img src="https://images.alphacoders.com/605/thumb-1920-605592.png" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+          <img src="/static/avatar.jpg" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
         </div>
         <div class="msg-bubble">
           <div class="msg-header">
@@ -657,7 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.innerHTML = `
           <div class="message-row gilgamesh-row">
             <div class="msg-avatar">
-              <img src="https://images.alphacoders.com/605/thumb-1920-605592.png" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+              <img src="/static/avatar.jpg" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
             </div>
             <div class="msg-bubble">
               <div class="msg-header">
