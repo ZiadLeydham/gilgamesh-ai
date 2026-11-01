@@ -350,8 +350,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="msg-time">Inner Sanctum Unlocked</span>
               </div>
               <div class="msg-content">
-                <span class="action">*The heavy golden gates of Babylon swing open with an echoing rumble, welcoming only the one true Master back into the King's presence.*</span>
-                "Welcome back, Master. The Royal Vault has recognized your seal. Every word we share here is written into eternity upon my tablet and synced across your devices. Speak—what shall we discuss today?"
+                <span class="action">*The towering golden gates of Babylon part with an echoing rumble, revealing the King of Heroes reclined upon his throne, a goblet of vintage wine in hand as crimson eyes gleam with cruel amusement.*</span>
+                "Hmph. So the mongrel actually remembered the royal seal to bypass my gates. Very well—I permit you past the threshold into my inner sanctum. Speak, then. Let us see if you have brought something worthy of my gaze today."
               </div>
             </div>
           </div>
@@ -395,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <div class="msg-content">
             <span class="action">*He sits reclined upon a lavish golden throne, a jewel-encrusted goblet of ancient vintage resting casually between his fingers.*</span>
-            "You stand in the presence of the King of Heroes in Guest Mode. Speak your mind, mongrel—though remember, only the true Master possesses the seal to the inner treasury."
+                "You stand in the presence of the King of Heroes. I permit you an audience, mongrel. Speak your mind—let us see if what you bring before my throne can amuse me."
           </div>
         </div>
       </div>
