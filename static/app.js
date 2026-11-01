@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="user-avatar-placeholder">M</div>
       <div class="msg-bubble">
         <div class="msg-header">
-          <span class="sender-name">You (Mongrel)</span>
+          <span class="sender-name">You</span>
           <span class="msg-time">Just now</span>
         </div>
         <div class="msg-content">${escapeHTML(text)}</div>
@@ -189,18 +189,13 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
 
-    const emotionBadge = `<span class="emotion-badge badge-${emotion}">${escapeHTML(emotion.toUpperCase())}</span>`;
-
     row.innerHTML = `
       <div class="msg-avatar">
-        <img src="/static/avatar.jpg?v=4" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+        <img src="/static/avatar.jpg?v=5" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
       </div>
       <div class="msg-bubble">
         <div class="msg-header">
-          <div style="display:flex; align-items:center;">
-            <span class="sender-name">Gilgamesh</span>
-            ${emotionBadge}
-          </div>
+          <span class="sender-name">Gilgamesh</span>
           <span class="msg-time">Just now</span>
         </div>
         ${formatGilgameshText(replyText)}
@@ -342,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.innerHTML = `
           <div class="message-row gilgamesh-row">
             <div class="msg-avatar">
-              <img src="/static/avatar.jpg?v=4" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+              <img src="/static/avatar.jpg?v=5" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
             </div>
             <div class="msg-bubble">
               <div class="msg-header">
@@ -386,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chatMessages.innerHTML = `
       <div class="message-row gilgamesh-row">
         <div class="msg-avatar">
-          <img src="/static/avatar.jpg?v=4" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+          <img src="/static/avatar.jpg?v=5" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
         </div>
         <div class="msg-bubble">
           <div class="msg-header">
@@ -554,7 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.innerHTML = `
           <div class="message-row gilgamesh-row">
             <div class="msg-avatar">
-              <img src="/static/avatar.jpg?v=4" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+              <img src="/static/avatar.jpg?v=5" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
             </div>
             <div class="msg-bubble">
               <div class="msg-header">
