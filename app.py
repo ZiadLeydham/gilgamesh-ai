@@ -330,12 +330,22 @@ async def transcribe(file: UploadFile = File(...)):
 static_dir = Path("static")
 static_dir.mkdir(exist_ok=True)
 
+@app.get("/")
+async def get_index():
+    return FileResponse(
+        static_dir / "index.html",
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+    )
+
 @app.get("/app-static/{file_path:path}")
 async def get_app_static(file_path: str):
     p = static_dir / file_path
     if p.exists() and p.is_file():
-        return FileResponse(p)
-    return FileResponse(static_dir / "index.html")
+        headers = {}
+        if p.suffix == ".html":
+            headers = {"Cache-Control": "no-cache, no-store, must-revalidate"}
+        return FileResponse(p, headers=headers)
+    return FileResponse(static_dir / "index.html", headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static_dir")
 app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="static_root")

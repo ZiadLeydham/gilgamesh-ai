@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Gilgamesh - The King of Heroes</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=4">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
     <header class="app-header">
       <div class="character-info">
         <div class="avatar-wrapper">
-          <img src="/static/avatar.jpg" alt="Gilgamesh" class="avatar-img" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+          <img src="/static/avatar.jpg?v=4" alt="Gilgamesh" class="avatar-img" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
           <span class="status-indicator online"></span>
         </div>
         <div class="character-meta">
@@ -29,58 +29,50 @@
           <span id="profile-icon">⚔️</span>
           <span id="profile-label">Guest Mode</span>
         </button>
+        <button id="call-toggle-btn" class="icon-btn live-call-btn" title="Start Live Voice Call">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+          </svg>
+          <span class="btn-text">Live Call</span>
+        </button>
         <button id="filter-toggle-btn" class="icon-btn filter-btn active" title="Toggle Acoustic De-Harshness Filter (Compare With / Without)">
           <span id="filter-btn-icon">⚡</span>
           <span id="filter-btn-label">Filter: ON</span>
         </button>
-        <button id="export-chat-btn" class="icon-btn" title="Download Royal Chronicle (Export Conversation & Long-Term Memories)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          <span>Export</span>
-        </button>
-        <button id="import-chat-btn" class="icon-btn" title="Restore Royal Chronicle (Upload Saved Chat & Memories)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
-          <span>Import</span>
-        </button>
-        <input type="file" id="import-file-input" accept=".json" style="display: none;">
-        <button id="call-toggle-btn" class="icon-btn live-call-btn" title="Start Live Voice Call">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-          </svg>
-          <span>Live Call</span>
-        </button>
         <button id="new-chat-btn" class="icon-btn" title="Begin New Audience (Reset Chat)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
             <path d="M21 3v5h-5"></path>
             <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
             <path d="M3 21v-5h5"></path>
           </svg>
-          <span>New Chat</span>
+          <span class="btn-text">New Chat</span>
         </button>
-        <button id="settings-btn" class="icon-btn" title="Settings / API Keys">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        <button id="export-chat-btn" class="icon-btn compact-tool-btn" title="Download Royal Chronicle (Export Conversation & Long-Term Memories)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
         </button>
+        <button id="import-chat-btn" class="icon-btn compact-tool-btn" title="Restore Royal Chronicle (Upload Saved Chat & Memories)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+        </button>
+        <input type="file" id="import-file-input" accept=".json" style="display: none;">
       </div>
     </header>
 
-    <!-- Chat Messages Scroll Area -->
+    <!-- Main Chat Window Area -->
     <main class="chat-container">
       <div id="chat-messages" class="chat-messages">
         <!-- Initial Greeting Message -->
         <div class="message-row gilgamesh-row">
           <div class="msg-avatar">
-            <img src="/static/avatar.jpg" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+            <img src="/static/avatar.jpg?v=4" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
           </div>
           <div class="msg-bubble">
             <div class="msg-header">
@@ -89,28 +81,27 @@
             </div>
             <div class="msg-content">
               <span class="action">*He sits reclined upon a lavish golden throne, a jewel-encrusted goblet of ancient vintage resting casually between his fingers as piercing crimson eyes regard you.*</span>
-              "You stand in the presence of the King of Heroes. I permit you an audience, mongrel. Speak your mind, or state your purpose—let us see if your words carry even the faintest spark of entertainment for this King."
+              "You stand in the presence of the King of Heroes. I permit you an audience, mongrel. Speak your mind—let us see if what you bring before my throne can amuse me, or if you are merely another disappointment."
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Typing / Portal Opening Indicator -->
+      <!-- Typing Indicator -->
       <div id="typing-indicator" class="typing-indicator" style="display: none;">
         <div class="gate-portal-dots">
           <span></span><span></span><span></span>
         </div>
-        <span class="typing-text">The Gate of Babylon stirs...</span>
+        <div class="typing-text">The King of Heroes is contemplating...</div>
       </div>
     </main>
 
-    <!-- Chat Input Footer -->
+    <!-- Footer / Input Bar -->
     <footer class="app-footer">
       <div class="input-bar">
-        <textarea id="chat-input" placeholder="Address the King of Heroes..." rows="1"></textarea>
-        
+        <textarea id="chat-input" placeholder="Speak to the King of Heroes..." rows="1"></textarea>
         <div class="bar-actions">
-          <button id="mic-btn" class="action-btn mic-btn" title="Speak to Gilgamesh (Hold or Click)">
+          <button id="mic-btn" class="action-btn" title="Speak to Gilgamesh (Hold or Click)">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
               <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
@@ -118,29 +109,26 @@
               <line x1="8" y1="23" x2="16" y2="23"></line>
             </svg>
           </button>
-          
-          <button id="send-btn" class="action-btn send-btn" title="Send Message">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <button id="send-btn" class="send-btn" title="Send Message">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="22" y1="2" x2="11" y2="13"></line>
               <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
             </svg>
           </button>
         </div>
       </div>
-      <div class="footer-hint">Press Enter to send. Use microphone for direct speech.</div>
     </footer>
   </div>
 
-  <!-- Live Call Modal (Fullscreen character immersion) -->
-  <div id="call-modal" class="call-modal" style="display: none;">
-    <div class="call-overlay"></div>
-    <div class="call-content">
+  <!-- Live Call Modal -->
+  <div id="call-modal" class="modal" style="display: none;">
+    <div class="call-modal-content">
       <div class="call-avatar-stage">
         <div class="portal-ring ring-1"></div>
         <div class="portal-ring ring-2"></div>
         <div class="portal-ring ring-3"></div>
         <div class="call-avatar">
-          <img src="/static/avatar.jpg" alt="Gilgamesh">
+          <img src="/static/avatar.jpg?v=4" alt="Gilgamesh">
         </div>
       </div>
 
@@ -158,9 +146,8 @@
             <line x1="8" y1="23" x2="16" y2="23"></line>
           </svg>
         </button>
-
         <button id="end-call-btn" class="call-ctrl-btn end-call" title="End Call">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"></path>
             <line x1="23" y1="1" x2="1" y2="23"></line>
           </svg>
@@ -171,92 +158,25 @@
 
   <!-- Master Profile PIN Lock Modal -->
   <div id="pin-modal" class="modal" style="display: none;">
-    <div class="modal-content" style="max-width: 420px; text-align: center;">
-      <div class="modal-header" style="justify-content: center; position: relative;">
-        <h2 style="font-family: 'Cinzel', serif; color: var(--gold-bright); font-size: 1.15rem;">👑 King's Inner Sanctum</h2>
-        <button id="close-pin-modal" class="close-btn" style="position: absolute; right: 0;">&times;</button>
-      </div>
-      <div class="modal-body" style="padding-top: 10px;">
-        <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 16px;">
-          Enter your Royal PIN to unlock your private cloud-synced memories, personal relationship standing, and dedicated audience with Gilgamesh.
-        </p>
-        <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 12px;">
-          <input type="password" id="vault-pin-input" maxlength="20" placeholder="Enter PIN (e.g. 1234)" style="width: 100%; text-align: center; letter-spacing: 4px; font-size: 1.2rem; font-weight: 700; padding: 12px;" autocomplete="current-password">
-        </div>
-        <button id="unlock-vault-btn" class="primary-btn" style="width: 100%;">Unlock Master Vault</button>
-        <div id="pin-error-msg" style="margin-top: 12px; font-size: 0.8rem; color: #ef4444; min-height: 1.2rem;"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Settings / Voice Engine Modal -->
-  <div id="settings-modal" class="modal" style="display: none;">
-    <div class="modal-content">
+    <div class="modal-content pin-modal-content">
       <div class="modal-header">
-        <h2>Gate of Babylon Settings</h2>
-        <button id="close-settings" class="close-btn">&times;</button>
+        <h2>👑 King's Inner Sanctum</h2>
+        <button id="close-pin-modal" class="close-btn">&times;</button>
       </div>
       <div class="modal-body">
-        <label for="groq-key-input">Groq API Key (Intelligence & Transcription):</label>
-        <input type="password" id="groq-key-input" placeholder="gsk_...">
-        <p class="help-text">Powers Qwen 27B Gilgamesh persona & Whisper speech recognition.</p>
-
-        <label style="margin-top: 16px; display: block; font-weight: 600;">Voice Synthesis Engine:</label>
-        <div class="engine-selector">
-          <label class="radio-label">
-            <input type="radio" name="voice_engine_choice" value="rvc" checked>
-            <span>Local RTX 4050 GPU (100% Free, David Vincent RVC)</span>
-          </label>
-          <label class="radio-label">
-            <input type="radio" name="voice_engine_choice" value="fish_audio">
-            <span>Fish Audio (Cloud Neural Voice - fish.audio)</span>
-          </label>
+        <p class="pin-desc">
+          Enter your Royal PIN to unlock your cloud-synced memories, dynamic relationship standing, and dedicated audience with Gilgamesh.
+        </p>
+        <div class="pin-input-group">
+          <input type="password" id="vault-pin-input" maxlength="20" placeholder="Enter PIN (e.g. 1234)" autocomplete="current-password">
         </div>
-
-        <div id="fish-audio-config" style="display: none; margin-top: 14px; padding: 12px; border: 1px solid var(--border-subtle); border-radius: 8px; background: rgba(0,0,0,0.3);">
-          <label for="fish-key-input">Fish Audio API Key:</label>
-          <input type="password" id="fish-key-input" placeholder="Paste your Fish Audio API Key">
-          <p class="help-text">Get a free key with free credits at <a href="https://fish.audio/app/api-keys" target="_blank" style="color: var(--gold-bright); text-decoration: underline;">fish.audio/app/api-keys</a>.</p>
-
-          <label for="fish-model-select" style="margin-top: 12px; display: block;">Gilgamesh Voice Model:</label>
-          <select id="fish-model-select" class="custom-select" style="width: 100%; padding: 10px; background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border-subtle); border-radius: 6px; margin-top: 4px;">
-            <option value="c8f17f6f069a44c2a0b617a3f3d9298f" selected>Gilgamesh (Pride of the King - English)</option>
-            <option value="2dab880640c84cefa655a61287dd6505">Gilgamesh (King of Heroes - English)</option>
-            <option value="custom">Custom Model ID...</option>
-          </select>
-          <input type="text" id="fish-custom-model-input" placeholder="Paste custom model ID here" style="display: none; margin-top: 8px;">
-
-          <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255, 215, 0, 0.15);">
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600;">
-              <input type="checkbox" id="noise-filter-checkbox" checked style="accent-color: var(--gold-primary); width: 18px; height: 18px; cursor: pointer;">
-              <span>Acoustic Noise Filter & Rage Softening</span>
-            </label>
-            <p class="help-text" style="margin-top: 4px; font-size: 0.78rem;">
-              When checked (ON): Softens rage to deep cold fury, cuts &gt;11.5 kHz vocoder noise, and limits clipping. When unchecked (OFF): Delivers raw unprocessed model output.
-            </p>
-          </div>
-        </div>
-
-        <div style="margin-top: 18px; padding: 14px; border: 1px solid rgba(255, 215, 0, 0.25); border-radius: 8px; background: rgba(20, 15, 5, 0.6);">
-          <h3 style="font-family: 'Cinzel', serif; color: var(--gold-primary); font-size: 0.95rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
-            <span>📜</span> The Royal Chronicle (Memory Backup)
-          </h3>
-          <p class="help-text" style="margin-bottom: 12px; font-size: 0.8rem;">
-            Export or import your full conversation and Gilgamesh's long-term memory of you. Save a backup to your device anytime or restore previous memories across devices.
-          </p>
-          <div style="display: flex; gap: 10px;">
-            <button id="modal-export-btn" class="icon-btn" style="flex: 1; justify-content: center; background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.3);">📥 Export Memory File</button>
-            <button id="modal-import-btn" class="icon-btn" style="flex: 1; justify-content: center; background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.3);">📤 Import Memory File</button>
-          </div>
-        </div>
-
-        <button id="save-settings-btn" class="primary-btn" style="margin-top: 20px;">Save Settings</button>
-        <div id="settings-msg" class="settings-msg"></div>
+        <button id="unlock-vault-btn" class="primary-btn">Unlock Master Vault</button>
+        <div id="pin-error-msg" class="pin-error-msg"></div>
       </div>
     </div>
   </div>
 
   <audio id="global-audio-player"></audio>
-  <script src="app.js"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

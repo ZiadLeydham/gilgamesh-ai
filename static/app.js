@@ -11,20 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const typingIndicator = document.getElementById('typing-indicator');
   const globalAudio = document.getElementById('global-audio-player');
   
-  // Settings modal
-  const settingsBtn = document.getElementById('settings-btn');
-  const settingsModal = document.getElementById('settings-modal');
-  const closeSettings = document.getElementById('close-settings');
-  const saveSettingsBtn = document.getElementById('save-settings-btn');
-  const groqKeyInput = document.getElementById('groq-key-input');
-  const settingsMsg = document.getElementById('settings-msg');
 
-  // Engine selection elements
-  const engineRadios = document.querySelectorAll('input[name="voice_engine_choice"]');
-  const fishAudioConfig = document.getElementById('fish-audio-config');
-  const fishKeyInput = document.getElementById('fish-key-input');
-  const fishModelSelect = document.getElementById('fish-model-select');
-  const fishCustomModelInput = document.getElementById('fish-custom-model-input');
 
   // Live Call Modal
   const callToggleBtn = document.getElementById('call-toggle-btn');
@@ -119,17 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let isCallActive = false;
   let currentEmotion = 'haughty';
 
-  // Toggle voice engine visibility
-  engineRadios.forEach(radio => {
-    radio.addEventListener('change', () => {
-      fishAudioConfig.style.display = radio.value === 'fish_audio' ? 'block' : 'none';
-    });
-  });
-
-  fishModelSelect.addEventListener('change', () => {
-    fishCustomModelInput.style.display = fishModelSelect.value === 'custom' ? 'block' : 'none';
-  });
-
   // Auto-resize chat textarea
   chatInput.addEventListener('input', () => {
     chatInput.style.height = 'auto';
@@ -142,90 +118,11 @@ document.addEventListener('DOMContentLoaded', () => {
   fetch('/api/status')
     .then(r => r.json())
     .then(data => {
-      if (!data.configured) {
-        settingsModal.style.display = 'flex';
-        settingsMsg.textContent = "Please enter your Groq API Key to awaken the King.";
-        settingsMsg.style.color = "#ffd700";
-      }
-
-      // Populate voice engine settings
-      const engine = data.voice_engine || 'rvc';
-      const targetRadio = document.querySelector(`input[name="voice_engine_choice"][value="${engine}"]`);
-      if (targetRadio) {
-        targetRadio.checked = true;
-        fishAudioConfig.style.display = engine === 'fish_audio' ? 'block' : 'none';
-      }
-
-      if (data.has_fish_key) {
-        fishKeyInput.placeholder = "•••••••••••••••• (Saved in .env)";
-      }
-
-      if (data.fish_model) {
-        const optionExists = Array.from(fishModelSelect.options).some(o => o.value === data.fish_model);
-        if (optionExists) {
-          fishModelSelect.value = data.fish_model;
-        } else {
-          fishModelSelect.value = 'custom';
-          fishCustomModelInput.value = data.fish_model;
-          fishCustomModelInput.style.display = 'block';
-        }
-      }
-
       if (typeof data.noise_filter !== 'undefined') {
         updateFilterUI(data.noise_filter);
       }
     })
-    .catch(err => console.error("Status check failed", err));
-
-  // Settings Handlers
-  settingsBtn.addEventListener('click', () => {
-    settingsModal.style.display = 'flex';
-  });
-
-  closeSettings.addEventListener('click', () => {
-    settingsModal.style.display = 'none';
-  });
-
-  saveSettingsBtn.addEventListener('click', async () => {
-    const groqKey = groqKeyInput.value.trim();
-    const selectedEngine = document.querySelector('input[name="voice_engine_choice"]:checked')?.value || 'rvc';
-    const fishKey = fishKeyInput.value.trim();
-    
-    let fishModel = fishModelSelect.value;
-    if (fishModel === 'custom') {
-      fishModel = fishCustomModelInput.value.trim();
-    }
-
-    const payload = {
-      voice_engine: selectedEngine,
-      noise_filter: noiseFilterCheckbox ? noiseFilterCheckbox.checked : isFilterActive
-    };
-    if (groqKey) payload.groq_api_key = groqKey;
-    if (fishKey) payload.fish_api_key = fishKey;
-    if (fishModel) payload.fish_model_id = fishModel;
-
-    try {
-      const res = await fetch('/api/set-settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (res.ok) {
-        settingsMsg.textContent = "Settings saved! The King commands.";
-        settingsMsg.style.color = "#10b981";
-        setTimeout(() => {
-          settingsModal.style.display = 'none';
-        }, 1200);
-      } else {
-        settingsMsg.textContent = data.detail || "Error saving settings.";
-        settingsMsg.style.color = "#ef4444";
-      }
-    } catch (e) {
-      settingsMsg.textContent = "Network error.";
-      settingsMsg.style.color = "#ef4444";
-    }
-  });
+    .catch(err => console.error('Status check failed', err));
 
   function scrollToBottom() {
     const container = document.querySelector('.chat-container');
@@ -296,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     row.innerHTML = `
       <div class="msg-avatar">
-        <img src="/static/avatar.jpg" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+        <img src="/static/avatar.jpg?v=4" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
       </div>
       <div class="msg-bubble">
         <div class="msg-header">
@@ -395,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Close modals when clicking backdrop
   window.addEventListener('click', (e) => {
     if (e.target === pinModal) pinModal.style.display = 'none';
-    if (e.target === settingsModal) settingsModal.style.display = 'none';
+    
   });
 
   async function attemptUnlockVault(pinToTest, isAuto = false) {
@@ -445,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.innerHTML = `
           <div class="message-row gilgamesh-row">
             <div class="msg-avatar">
-              <img src="/static/avatar.jpg" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+              <img src="/static/avatar.jpg?v=4" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
             </div>
             <div class="msg-bubble">
               <div class="msg-header">
@@ -489,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chatMessages.innerHTML = `
       <div class="message-row gilgamesh-row">
         <div class="msg-avatar">
-          <img src="/static/avatar.jpg" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+          <img src="/static/avatar.jpg?v=4" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
         </div>
         <div class="msg-bubble">
           <div class="msg-header">
@@ -657,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.innerHTML = `
           <div class="message-row gilgamesh-row">
             <div class="msg-avatar">
-              <img src="/static/avatar.jpg" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
+              <img src="/static/avatar.jpg?v=4" alt="Gilgamesh" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Gilgamesh'">
             </div>
             <div class="msg-bubble">
               <div class="msg-header">
